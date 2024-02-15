@@ -1,0 +1,44 @@
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import schedule
+import time
+
+def send_email(subject, message, from_email, to_email, smtp_server, smtp_port, smtp_username, smtp_password):
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = ', '.join(to_email)
+    msg['Subject'] = subject
+
+    body = message
+    msg.attach(MIMEText(body, 'plain'))
+
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.starttls()
+    server.login(smtp_username, smtp_password)
+    text = msg.as_string()
+    server.sendmail(from_email, to_email, text)
+    server.quit()
+
+def compose_and_send_email():
+    print("Compose your email:")
+    subject = input("Subject: ")
+    message = input("Message: ")
+    recipients = input("Recipients (separate emails by comma): ").split(',')
+    send_time = input("Enter the time to send the email (in HH:MM format): ")
+
+    smtp_server = input("SMTP Server: ")
+    smtp_port = int(input("SMTP Port: "))
+    smtp_username = input("SMTP Username: ")
+    smtp_password = input("SMTP Password: ")
+
+    schedule.every().day.at(send_time).do(send_email, subject, message, smtp_username, recipients, smtp_server, smtp_port, smtp_username, smtp_password)
+
+    print("Email scheduled for delivery at", send_time)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+if __name__ == "__main__":
+    compose_and_send_email()
